@@ -2,9 +2,7 @@ package com.arunabha.expensetracker
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.focusable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -37,22 +35,37 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
+import com.arunabha.expensetracker.data.model.TransactionEntity
 import com.arunabha.expensetracker.ui.theme.Zinc
+import com.arunabha.expensetracker.viewmodel.AddTransactionViewModel
+import com.arunabha.expensetracker.viewmodel.AddTransactionViewModelFactory
+import kotlinx.coroutines.launch
 
 @Composable
-fun AddTransaction() {
+fun AddTransaction(navController: NavController) {
+
+    val viewModel = AddTransactionViewModelFactory(LocalContext.current).create(
+        AddTransactionViewModel::class.java
+    )
+    val coroutineScope = rememberCoroutineScope()
+
+
     Surface(modifier = Modifier.fillMaxSize()) {
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
             val (topBar, titleRow, dataForm) = createRefs()
@@ -109,7 +122,14 @@ fun AddTransaction() {
                         top.linkTo(titleRow.bottom)
                         start.linkTo(parent.start)
                         end.linkTo(parent.end)
+                    },
+                onAddTransactionClick = {
+                    coroutineScope.launch {
+                        if(viewModel.addTransaction(it)){
+                            navController.popBackStack() // Back to previous screen
+                        }
                     }
+                }
             )
         }
     }
@@ -117,7 +137,7 @@ fun AddTransaction() {
 
 // DataForm composable: Form to take input of transaction details
 @Composable
-fun DataForm(modifier: Modifier) {
+fun DataForm(modifier: Modifier, onAddTransactionClick: (model: TransactionEntity) -> Unit) {
 
 
     val name = remember { mutableStateOf("") }
@@ -182,7 +202,11 @@ fun DataForm(modifier: Modifier) {
                     imageVector = Icons.Default.DateRange,
                     contentDescription = null
                 )
-            }
+            },
+            colors = OutlinedTextFieldDefaults.colors(
+                disabledBorderColor = Color.Black,
+                disabledTextColor = Color.Black
+            )
         )
         Spacer(modifier = Modifier.size(8.dp))
 
@@ -216,10 +240,22 @@ fun DataForm(modifier: Modifier) {
         Spacer(modifier = Modifier.size(8.dp))
 
         // Add Button
-        Button(modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+        Button(modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 10.dp),
             shape = RoundedCornerShape(10.dp),
             colors = ButtonDefaults.buttonColors(containerColor = Zinc),
-            onClick = {}
+            onClick = {
+                val transaction = TransactionEntity(
+                    id = null,
+                    title = name.value,
+                    amount = amount.value.toDoubleOrNull() ?: 0.00,
+                    date = Utils.formatDateToHumanReadableForm(date.value),
+                    category = category.value,
+                    type = type.value
+                )
+                onAddTransactionClick(transaction)
+            }
         ) {
             Text(text = "Add Transaction", fontWeight = FontWeight.SemiBold)
         }
@@ -316,5 +352,5 @@ fun TransactionDropdown(list: List<String>, onItemSelected: (item: String) -> Un
 @Composable
 @Preview(showBackground = true)
 fun AddTransactionPreview() {
-    AddTransaction()
+    AddTransaction(rememberNavController())
 }

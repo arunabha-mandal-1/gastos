@@ -18,14 +18,16 @@ import com.arunabha.expensetracker.ui.theme.ExpenseTrackerTheme
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        enableEdgeToEdge() // For this status bar will be covered by the top image, tho it looks good
+//        enableEdgeToEdge() // For this status bar will be covered by the top image, tho it looks good
         setContent {
             ExpenseTrackerTheme {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    AddTransaction()
+//                    AddTransaction()
+//                    HomeScreen()
+                    NavHostScreen()
                 }
             }
         }

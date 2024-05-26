@@ -2,6 +2,7 @@ package com.arunabha.expensetracker
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,8 +15,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Icon
@@ -38,6 +41,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
+import androidx.navigation.NavController
+import androidx.navigation.compose.rememberNavController
 import com.arunabha.expensetracker.data.model.TransactionEntity
 import com.arunabha.expensetracker.ui.theme.Zinc
 import com.arunabha.expensetracker.viewmodel.HomeViewModel
@@ -45,14 +50,15 @@ import com.arunabha.expensetracker.viewmodel.HomeViewModelFactory
 
 // App's Home Screen
 @Composable
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
     // Initializing Viewmodel using custom viewmodel factory
-    val viewModel: HomeViewModel = HomeViewModelFactory(LocalContext.current).create(HomeViewModel::class.java)
+    val viewModel: HomeViewModel =
+        HomeViewModelFactory(LocalContext.current).create(HomeViewModel::class.java)
 
     // Starting Home Screen ...
     Surface(modifier = Modifier.fillMaxSize()) {
         ConstraintLayout(modifier = Modifier.fillMaxSize()) {
-            val (nameRow, card, list, topBar, dummy) = createRefs()
+            val (nameRow, card, list, topBar, dummy, add) = createRefs()
 
             // Top image section which covers status bar
             Image(
@@ -131,6 +137,23 @@ fun HomeScreen() {
                     height = Dimension.fillToConstraints
                 },
                 list = state.value
+            )
+
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = null,
+                tint = Zinc,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .padding(end = 10.dp, bottom = 10.dp)
+                    .constrainAs(add){
+                        bottom.linkTo(parent.bottom)
+                        end.linkTo(parent.end)
+                    }
+                    .clickable {
+                        navController.navigate("/add")
+                    }
             )
 
             // Testing : Navigation bar covering this
@@ -255,7 +278,7 @@ fun TransactionList(modifier: Modifier, list: List<TransactionEntity>) {
         items(list) {
             TransactionItem(
                 title = it.title,
-                amount = if (it.type == "Income") "+ ${it.amount}" else "- ${it.amount}",
+                amount = if (it.type == "Income") "+ $${it.amount}" else "- $${it.amount}",
                 icon = if (it.type == "Income") Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                 date = it.date.toString(),
                 color = if (it.type == "Income") Color.Green else Color.Red
@@ -263,7 +286,6 @@ fun TransactionList(modifier: Modifier, list: List<TransactionEntity>) {
         }
     }
 }
-
 
 
 // TransactionItem Composable to show each transaction
@@ -314,5 +336,5 @@ fun TransactionItem(title: String, amount: String, icon: ImageVector, date: Stri
 @Composable
 @Preview(showBackground = true)
 fun PreviewHomeScreen() {
-    HomeScreen()
+    HomeScreen(rememberNavController())
 }

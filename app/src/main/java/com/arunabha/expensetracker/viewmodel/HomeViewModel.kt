@@ -3,6 +3,7 @@ package com.arunabha.expensetracker.viewmodel
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
+import com.arunabha.expensetracker.Utils
 import com.arunabha.expensetracker.data.TransactionDatabase
 import com.arunabha.expensetracker.data.dao.TransactionDao
 import com.arunabha.expensetracker.data.model.TransactionEntity
@@ -20,7 +21,7 @@ class HomeViewModel(dao: TransactionDao) : ViewModel() {
                 total -= it.amount
             }
         }
-        return "$ $total"
+        return "$ ${Utils.formatTwoDecimalValues(total)}"
     }
 
     // Get total income
@@ -31,7 +32,7 @@ class HomeViewModel(dao: TransactionDao) : ViewModel() {
                 total += it.amount
             }
         }
-        return "$ $total"
+        return "$ ${Utils.formatTwoDecimalValues(total)}"
     }
 
     // Get total expense
@@ -42,7 +43,7 @@ class HomeViewModel(dao: TransactionDao) : ViewModel() {
                 total += it.amount
             }
         }
-        return "$ $total"
+        return "$ ${Utils.formatTwoDecimalValues(total)}"
     }
 
     fun getItemIcon(){
